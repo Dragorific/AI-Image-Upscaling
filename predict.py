@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import *
+from keras.layers import *
+from keras.models import *
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.optimizers import Adam
+from keras.optimizers import Adam
 from helper import *
 
 # Main Driver Code
@@ -18,12 +18,12 @@ custom_objects = {
 
 # inference part! for the new image!
 # Load the models for each channel
-model_y = load_model('old_model/model_y.h5', custom_objects=custom_objects)
-model_u = load_model('old_model/model_u.h5')
-model_v = load_model('old_model/model_v.h5')
+model_y = load_model('model/model_y.h5', custom_objects=custom_objects)
+model_u = load_model('model/model_u.h5', custom_objects=custom_objects)
+model_v = load_model('model/model_v.h5', custom_objects=custom_objects)
 
 # Read the test image, create the comparison image, and convert to YUV format
-img = cv2.imread('./DIV2K_valid_HR/0816.png')
+img = cv2.imread('./DIV2K_valid_HR/dress_64x64.png')
 img_compare = cv2.resize(img, (64, 64), interpolation=cv2.INTER_AREA)
 img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
 
@@ -33,7 +33,7 @@ u_channel = img_ycrcb[:, :, 1]
 v_channel = img_ycrcb[:, :, 2]
 
 # Resize and format for the model to predict (model is trained for 64x64 -> 128x128)
-y = cv2.resize(y_channel, (64, 64), interpolation=cv2.INTER_AREA)
+y = cv2.resize(y_channel, (64, 64), interpolation=cv2.INTER_CUBC)
 y = np.expand_dims(y, axis=0)
 
 u = cv2.resize(u_channel, (64, 64), interpolation=cv2.INTER_AREA)
@@ -79,21 +79,28 @@ upscaled_rgb = cv2.cvtColor(upscaled_ycrcb.astype(np.uint8), cv2.COLOR_YCrCb2RGB
 
 # Convert the img_compare variable to RGB
 img_compare_rgb = cv2.cvtColor(img_compare, cv2.COLOR_BGR2RGB)
+img_compare_bicubic = cv2.resize(img_compare_rgb, (512,512), interpolation=cv2.INTER_AREA)
 
 # Create the image to make SSIM comparison
-img_ssim = cv2.resize(img, (128, 128), interpolation=cv2.INTER_AREA)
+img_ssim = cv2.resize(img, (512, 512), interpolation=cv2.INTER_AREA)
 img_ssim_rgb = cv2.cvtColor(img_ssim, cv2.COLOR_BGR2RGB)
 
 # Calculate SSIM
-ssim_val = ssim_rgb(upscaled_rgb, img_ssim_rgb).numpy()
-print("SSIM between upscaled_rgb and img_compare_rgb:", ssim_val)
+ssim_val = ssim_rgb(img_ssim_rgb, upscaled_rgb).numpy()
+print("SSIM between upscaled_rgb and original image:", ssim_val)
+
+psnr_val = psnr(img_ssim_rgb, upscaled_rgb).numpy()
+print("PSNR between upscaled_rgb and original image:", psnr_val)
 
 # Display the original image and the upscaled image
 plt.figure()
-plt.subplot(121)
+plt.subplot(131)
 plt.imshow(img_compare_rgb)
 plt.title("Original Image")
-plt.subplot(122)
+plt.subplot(132)
 plt.imshow(upscaled_rgb)
-plt.title("Upscaled Image")
+plt.title("Upscaled Image (Machine Learning)")
+plt.subplot(133)
+plt.imshow(img_compare_bicubic)
+plt.title("Upscaled Image (Pixel Area Relation)")
 plt.show()

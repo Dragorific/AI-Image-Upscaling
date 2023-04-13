@@ -63,20 +63,25 @@ def ssim_loss(y_true, y_pred, K1=0.01, K2=0.03, L=255.0):
     return loss
 
 # A combined loss function that combines both SSIM and MSE
-def combined_loss(y_true, y_pred, alpha=0.5):
-    mse_loss = tf.reduce_mean(tf.square(y_true - y_pred))
-    ssim_loss = 1.0 - tf.image.ssim(y_true, y_pred, max_val=255)
-    return alpha * mse_loss + (1 - alpha) * ssim_loss
+def combined_loss(y_true, y_pred, alpha=0.8):
+    y_true = tf.cast(y_true, tf.float32)
+    loss_mse = tf.reduce_mean(tf.square(y_true - y_pred))
+    loss_ssim = ssim_loss(y_true, y_pred)
+    return alpha * loss_mse + (1 - alpha) * loss_ssim
+
 
 # Get model doesn't change, we can make the same model base for each prediction model
 def get_model():
     input = Input(shape=(None, None, 1))
-    x = Conv2D(32, 3, activation='relu', padding='same')(input)
+    x = Conv2D(16, 3, activation='relu', padding='same')(input)
+    x = Conv2D(32, 3, activation='relu', padding='same')(x)
     x = Conv2D(64, 3, activation='relu', padding='same')(x)
     x = Conv2D(128, 3, activation='relu', padding='same')(x)
     x = UpSampling2D(2)(x)
+    x = UpSampling2D(4)(x)
     x = Conv2D(64, 3, activation='relu', padding='same')(x)
     x = Conv2D(32, 3, activation='relu', padding='same')(x)
+    x = Conv2D(16, 3, activation='relu', padding='same')(x)
     x = Conv2D(1, 3, activation=None, padding='same')(x)
     x = Activation('tanh')(x)
     x = x * 127.5 + 127.5
@@ -87,12 +92,15 @@ def get_model():
 
 def get_model_uv():
     input = Input(shape=(None, None, 1))
-    x = Conv2D(32, 3, activation='relu', padding='same')(input)
+    x = Conv2D(16, 3, activation='relu', padding='same')(input)
+    x = Conv2D(32, 3, activation='relu', padding='same')(x)
     x = Conv2D(64, 3, activation='relu', padding='same')(x)
     x = Conv2D(128, 3, activation='relu', padding='same')(x)
     x = UpSampling2D(2)(x)
+    x = UpSampling2D(4)(x)
     x = Conv2D(64, 3, activation='relu', padding='same')(x)
     x = Conv2D(32, 3, activation='relu', padding='same')(x)
+    x = Conv2D(16, 3, activation='relu', padding='same')(x)
     x = Conv2D(1, 3, activation=None, padding='same')(x)
 
     model = Model([input], x)
@@ -116,15 +124,15 @@ def get_data():
         u_channel = img_ycrcb[:, :, 1]
         v_channel = img_ycrcb[:, :, 2]
         
-        y_out = cv2.resize(y_channel, (128, 128), interpolation=cv2.INTER_AREA)
-        y_in = cv2.resize(y_out, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+        y_out = cv2.resize(y_channel, (512, 512), interpolation=cv2.INTER_AREA)
+        y_in = cv2.resize(y_out, None, fx=0.125, fy=0.125, interpolation=cv2.INTER_AREA)
 
-        u_out = cv2.resize(u_channel, (128, 128), interpolation=cv2.INTER_AREA)
-        u_in = cv2.resize(u_out, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+        u_out = cv2.resize(u_channel, (512, 512), interpolation=cv2.INTER_AREA)
+        u_in = cv2.resize(u_out, None, fx=0.125, fy=0.125, interpolation=cv2.INTER_AREA)
 
 
-        v_out = cv2.resize(v_channel, (128, 128), interpolation=cv2.INTER_AREA)
-        v_in = cv2.resize(v_out, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+        v_out = cv2.resize(v_channel, (512, 512), interpolation=cv2.INTER_AREA)
+        v_in = cv2.resize(v_out, None, fx=0.125, fy=0.125, interpolation=cv2.INTER_AREA)
         
         y_x.append(y_in)
         y_y.append(y_out)
@@ -169,3 +177,12 @@ def ssim_rgb(img1, img2, max_val=255.0, K1=0.01, K2=0.03):
 
     ssim = ssim_n / ssim_d
     return tf.reduce_mean(ssim, axis=0)
+
+def psnr(y_true, y_pred, max_val=255.0):
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
+    
+    mse = tf.reduce_mean(tf.square(y_true - y_pred))
+    psnr_val = 20 * tf.math.log(max_val) / tf.math.log(10.0) - 10 * tf.math.log(mse) / tf.math.log(10.0)
+    
+    return psnr_val

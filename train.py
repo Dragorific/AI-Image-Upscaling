@@ -39,7 +39,7 @@ y_x, y_y, u_x, u_y, v_x, v_y = get_data()
 X_train, X_val, y_train, y_val = train_test_split(u_x, u_y, test_size=0.2, random_state=42)
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=1e-04)
-model_u.compile(loss=combined_loss, optimizer=optimizer)
+model_u.compile(loss='mse', optimizer=optimizer)
 
 save_model_callback = tf.keras.callbacks.ModelCheckpoint('model/model_u.h5', monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_freq='epoch')
 
@@ -54,7 +54,7 @@ model_u.fit(X_train, y_train, validation_data=(X_val, y_val), batch_size=batch_s
 X_train, X_val, y_train, y_val = train_test_split(v_x, v_y, test_size=0.2, random_state=42)
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=1e-04)
-model_v.compile(loss=combined_loss, optimizer=optimizer)
+model_v.compile(loss='mse', optimizer=optimizer)
 
 save_model_callback = tf.keras.callbacks.ModelCheckpoint('model/model_v.h5', monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_freq='epoch')
 

@@ -64,7 +64,6 @@ def ssim_loss(y_true, y_pred, K1=0.01, K2=0.03, L=255.0):
 
 # A combined loss function that combines both SSIM and MSE
 def combined_loss(y_true, y_pred, alpha=0.5):
-
     mse_loss = tf.reduce_mean(tf.square(y_true - y_pred))
     ssim_loss = 1.0 - tf.image.ssim(y_true, y_pred, max_val=255)
     return alpha * mse_loss + (1 - alpha) * ssim_loss

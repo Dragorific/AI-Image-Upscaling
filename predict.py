@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -11,6 +12,7 @@ from keras.optimizers import Adam
 from helper import *
 
 # Main Driver Code
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 custom_objects = {
     'ssim_loss': ssim_loss,
     'combined_loss': combined_loss
@@ -23,7 +25,7 @@ model_u = load_model('model/model_u.h5', custom_objects=custom_objects)
 model_v = load_model('model/model_v.h5', custom_objects=custom_objects)
 
 # Read the test image, create the comparison image, and convert to YUV format
-img = cv2.imread('./DIV2K_valid_HR/dress_64x64.png')
+img = cv2.imread('./DIV2K_valid_HR/0830.png')
 img_compare = cv2.resize(img, (64, 64), interpolation=cv2.INTER_AREA)
 img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
 
@@ -33,7 +35,7 @@ u_channel = img_ycrcb[:, :, 1]
 v_channel = img_ycrcb[:, :, 2]
 
 # Resize and format for the model to predict (model is trained for 64x64 -> 128x128)
-y = cv2.resize(y_channel, (64, 64), interpolation=cv2.INTER_CUBC)
+y = cv2.resize(y_channel, (64, 64), interpolation=cv2.INTER_AREA)
 y = np.expand_dims(y, axis=0)
 
 u = cv2.resize(u_channel, (64, 64), interpolation=cv2.INTER_AREA)

@@ -5,10 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import *
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.optimizers import Adam
+from keras.layers import *
+from keras.models import *
+from keras.layers import Dropout
+from keras.optimizers import Adam
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 

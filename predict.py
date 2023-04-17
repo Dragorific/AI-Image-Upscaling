@@ -25,7 +25,7 @@ model_u = load_model('model/model_u.h5', custom_objects=custom_objects)
 model_v = load_model('model/model_v.h5', custom_objects=custom_objects)
 
 # Read the test image, create the comparison image, and convert to YUV format
-img = cv2.imread('./DIV2K_valid_HR/0830.png')
+img = cv2.imread('./DIV2K_valid_HR/0818.png')
 img_compare = cv2.resize(img, (64, 64), interpolation=cv2.INTER_AREA)
 img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
 
@@ -81,7 +81,9 @@ upscaled_rgb = cv2.cvtColor(upscaled_ycrcb.astype(np.uint8), cv2.COLOR_YCrCb2RGB
 
 # Convert the img_compare variable to RGB
 img_compare_rgb = cv2.cvtColor(img_compare, cv2.COLOR_BGR2RGB)
-img_compare_bicubic = cv2.resize(img_compare_rgb, (512,512), interpolation=cv2.INTER_AREA)
+img_compare_inter = cv2.resize(img_compare_rgb, (512,512), interpolation=cv2.INTER_AREA)
+img_compare_bilinear = cv2.resize(img_compare_rgb, (512,512), interpolation=cv2.INTER_LINEAR)
+img_compare_cubic = cv2.resize(img_compare_rgb, (512,512), interpolation=cv2.INTER_CUBIC)
 
 # Create the image to make SSIM comparison
 img_ssim = cv2.resize(img, (512, 512), interpolation=cv2.INTER_AREA)
@@ -96,13 +98,19 @@ print("PSNR between upscaled_rgb and original image:", psnr_val)
 
 # Display the original image and the upscaled image
 plt.figure()
-plt.subplot(131)
+plt.subplot(231)
 plt.imshow(img_compare_rgb)
 plt.title("Original Image")
-plt.subplot(132)
+plt.subplot(232)
 plt.imshow(upscaled_rgb)
 plt.title("Upscaled Image (Machine Learning)")
-plt.subplot(133)
-plt.imshow(img_compare_bicubic)
+plt.subplot(233)
+plt.imshow(img_compare_inter)
 plt.title("Upscaled Image (Pixel Area Relation)")
+plt.subplot(234)
+plt.imshow(img_compare_bilinear)
+plt.title("Upscaled Image (Bilinear)")
+plt.subplot(235)
+plt.imshow(img_compare_cubic)
+plt.title("Upscaled Image (Bi-cubic)")
 plt.show()

@@ -31,7 +31,7 @@ save_model_callback = tf.keras.callbacks.ModelCheckpoint('model/model_y.h5', mon
 tbCallBack = tf.keras.callbacks.TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
 batch_size = 4
-epochs = 20
+epochs = 10
 
 model_y.fit(X_train, y_train, validation_data=(X_val, y_val), batch_size=batch_size, epochs=epochs, validation_split=0.1, callbacks=[save_model_callback, tbCallBack])
 
@@ -46,7 +46,7 @@ save_model_callback = tf.keras.callbacks.ModelCheckpoint('model/model_u.h5', mon
 tbCallBack = tf.keras.callbacks.TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
 batch_size = 4
-epochs = 20
+epochs = 10
 
 model_u.fit(X_train, y_train, validation_data=(X_val, y_val), batch_size=batch_size, epochs=epochs, validation_split=0.1, callbacks=[save_model_callback, tbCallBack])
 
@@ -61,6 +61,6 @@ save_model_callback = tf.keras.callbacks.ModelCheckpoint('model/model_v.h5', mon
 tbCallBack = tf.keras.callbacks.TensorBoard(log_dir='./Graph', histogram_freq=0, write_graph=True, write_images=True)
 
 batch_size = 4
-epochs = 20
+epochs = 10
 
 model_v.fit(X_train, y_train, validation_data=(X_val, y_val), batch_size=batch_size, epochs=epochs, validation_split=0.1, callbacks=[save_model_callback, tbCallBack])
